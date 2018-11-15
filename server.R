@@ -2,9 +2,6 @@ library(shiny)
 library(MASS)
 library(lme4)
 
-
-## Fix manual sampling for dependency 
-
 ##############################
 ############### FUNCTIONS ############
 ####################################

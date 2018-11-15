@@ -309,6 +309,39 @@ ML_dat <- function(GS, NG, ICC, d, fixed.int = 4, scale = 1){
   return(dat)	
 }
 
+ML_dat_man <- function(GS, NG, ICC, mu1, mu2, sigma){
+  # GS = number of observations per cell	
+  # NG = number of cells		
+  # ICC = Intraclass correlation (this determines the intercept variance of full model as well)
+  # d = Cohen's difference between groups
+  Ngr <- rep(GS, NG)
+  ntot <- sum(Ngr)
+  # calculate what the intercept variance should be given sigma and the desired ICC
+  int.var <- (ICC*sigma^2)/(1-ICC) 
+  # Based on intercept variance and what second level predictor explains, obtain intercept variance full model
+  v <- matrix(rnorm(NG, mean = 0, sd = sqrt(int.var)), ncol = 1)
+  # simulate for 2nd level variance and covariance terms
+  Dist <- c(rep(0,(GS*(NG/2))), rep(1,(GS*(NG/2))))
+  # Simulate predictor variable, syntax also works for unequal group sizes
+  
+  Ngr2 <- c(0, Ngr)
+  dat=matrix(0,ntot,3)		# create matrix for standardized predictor variables, outcomes and group membership
+  dat[,1] <- Dist
+  for (ic in 1:NG) {			# obtain outcome values
+    ic1=ic-1
+    ist= 1 + (sum(Ngr2[1:ic]))
+    iend= sum(Ngr2[1:(ic + 1)])
+    dat[ist:iend,2]= (mu2-mu1)*Dist[ist:iend] + v[ic,1] + rnorm(Ngr[ic],0,sigma)
+    dat[ist:iend,2]= dat[ist:iend,2] + mu1
+    dat[ist:iend,3]=ic1+1		# put cell id in last column
+  }
+  
+  dat=as.data.frame(dat)
+  colnames(dat)=c("Condition", "Outcome", "ClusterID")
+  return(dat)	
+}
+
+
 
 ############################
 ########## SERVER
@@ -726,30 +759,32 @@ server <- function(input, output) {
     } else if(input$EffSize4 == 'Large'){
       rv$d.val <- 0.8
     } else if(input$EffSize4 == 'Manual'){
-      rv$d.val <- (input$mu2 - input$mu1)/ input$sigma
+      rv$d.val <- (input$mu2IND - input$mu1IND)/ input$sigmaIND
     }
+    print(rv$d.val)
     
     if (input$TypeDep == 'Siblings (ICC = .30)'){
       if(input$EffSize4 != 'Manual'){
         rv$data <- ML_dat(GS = 2, NG= input$Nclusters, ICC= .30, d = rv$d.val)
       } else {
-        rv$data <- ML_dat(GS = 2, NG= input$Nclusters, ICC= .30, d = rv$d.val, fixed.int = input$mu1, scale = input$sigma)
+        rv$data <- ML_dat_man(GS = 2, NG= input$Nclusters, ICC= .30, 
+                              mu1 = input$mu1IND, mu2 = input$mu2IND, sigma = input$sigmaIND)
       }
       rv$title <- "Sibling ID"
     } else if (input$TypeDep == 'Twins (ICC = .50)'){
       if(input$EffSize4 != 'Manual'){
         rv$data <- ML_dat(GS = 2, NG= input$Nclusters, ICC= .50, d = rv$d.val)
       } else {
-        rv$data <- ML_dat(GS = 2, NG= input$Nclusters, ICC= .50, d = rv$d.val, 
-                          fixed.int = input$mu1, scale = input$sigma)
+        rv$data <- ML_dat_man(GS = 2, NG= input$Nclusters, ICC= .50, 
+                              mu1 = input$mu1IND, mu2 = input$mu2IND, sigma = input$sigmaIND)
       }
       rv$title <- "Twin ID"
     } else if (input$TypeDep =='Classmates (ICC = .10)'){
       if(input$EffSize4 != 'Manual'){
         rv$data <- ML_dat(GS = 30, NG= input$Nclusters, ICC= .10, d = rv$d.val)
       } else {
-        rv$data <- ML_dat(GS = 30, NG= input$Nclusters, ICC= .10, d = rv$d.val, 
-                          fixed.int = input$mu1, scale = input$sigma)
+        rv$data <- ML_dat_man(GS = 30, NG= input$Nclusters, ICC= .10,  
+                              mu1 = input$mu1IND, mu2 = input$mu2IND, sigma = input$sigmaIND)
       }
       rv$title <- "Class ID"
     }
@@ -757,8 +792,8 @@ server <- function(input, output) {
       if(input$EffSize4 != 'Manual'){
         rv$data <- ML_dat(GS = 10, NG= input$Nclusters, ICC= .0, d = rv$d.val)
       } else {
-        rv$data <- ML_dat(GS = 10, NG= input$Nclusters, ICC= .0, d = rv$d.val, 
-                          fixed.int = input$mu1, scale = input$sigma)
+        rv$data <- ML_dat_man(GS = 10, NG= input$Nclusters, ICC= .0, 
+                              mu1 = input$mu1IND, mu2 = input$mu2IND, sigma = input$sigmaIND)
       }
       rv$title <- "Cluster ID"
     }
@@ -766,8 +801,8 @@ server <- function(input, output) {
       if(input$EffSize4 != 'Manual'){
         rv$data <- ML_dat(GS = input$Csize, NG= input$Nclusters, ICC= input$ICC, d = rv$d.val)
       } else {
-        rv$data <- ML_dat(GS = input$Csize, NG= input$Nclusters, ICC= input$ICC, d = rv$d.val, 
-                          fixed.int = input$mu1IND, scale = input$sigmaIND)
+        rv$data <- ML_dat_man(GS = input$Csize, NG= input$Nclusters, ICC= input$ICC,  
+                              mu1 = input$mu1IND, mu2 = input$mu2IND, sigma = input$sigmaIND)
       }
       rv$title <- "Cluster ID"
     }

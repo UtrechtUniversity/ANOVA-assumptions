@@ -4,12 +4,15 @@ library(lme4)
 
 
 ## Fix manual sampling for dependency 
-## For normality, add kurtosis and skewness to descriptives, and adjust / check variance
-## check for any other double naming
 
 ##############################
 ############### FUNCTIONS ############
 ####################################
+
+numformat <- function(x, digits = 2) { 
+  ncode <- paste0("%.", digits, "f")
+  sub("^(-?)0.", "\\1.", sprintf(ncode, x))
+}
 
 ANOVA_dat_norm <- function(total.n, group.n, eta.sq, kurt = 0, skw = 0){
   ss.total <- total.n - 1
@@ -361,10 +364,10 @@ server <- function(input, output) {
     output$boxplNORM<- renderPlot({
       if(input$EffSize1 !='Manual'){
         boxplot(outcome ~ group, data = rv$data[order(rv$data[,1]),], names = c("Group 1", "Group 2", "Group 3"), ylab = "Outcome",
-                col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"), ylim = c(-2,12))
+                col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"), ylim = c(-2,12), boxwex = 0.25)
       } else {
         boxplot(outcome ~ group, data = rv$data[order(rv$data[,1]),], names = c("Group 1", "Group 2", "Group 3"), ylab = "Outcome",
-                col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"))
+                col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"), boxwex = 0.25)
       }
       p.color2 <- c("cadetblue", "coral", "darkolivegreen4")
       for(i in 1:3){
@@ -387,7 +390,7 @@ server <- function(input, output) {
       polygon(density(rv$data[rv$data[,1] == 3,2], adjust = 2), col = rgb(t(col2rgb("darkseagreen1")), maxColorValue = 255, alpha = 0.4*255), border = NA)
     }) 
     
-    output$aovSummary1NORM <- renderTable(rownames = TRUE, {
+    output$aovSummary1NORM <- renderTable(rownames = TRUE, na = "",{
       return(anova(lm(outcome ~ group, data = rv$data)))
     })
     output$descriptives1NORM <- renderTable(rownames = TRUE,{
@@ -408,7 +411,7 @@ server <- function(input, output) {
     
     output$p_val1NORM <- renderText({
       paste("P-value ANOVA: ",
-            formatC(round(anova(lm(outcome ~ group, data = rv$data))[1,5], 3), format='f', digits=3 )
+            formatC(numformat(round(anova(lm(outcome ~ group, data = rv$data))[1,5], 3), digits = 3), format='f', digits=3)
       )      
     })
     
@@ -419,7 +422,7 @@ server <- function(input, output) {
         realFstar <- anova(lm(outcome ~ group, data = rv$data))[1,4]
         boot_p <- mean(Fdist_act >= realFstar)
         paste("P-value bootstrapped ANOVA: ",
-              formatC(round(boot_p, 3), format='f', digits=3)
+              formatC(numformat(round(boot_p, 3), digits = 3), format='f', digits=3)
         )
       })
     }) 
@@ -469,10 +472,10 @@ server <- function(input, output) {
     output$boxplOUTL <- renderPlot({
       if(input$EffSize2 !='Manual'){
         boxplot(outcome ~ group, data = rv$data[order(rv$data[,1]),], names = c("Group 1", "Group 2", "Group 3"), ylab = "Outcome",
-                col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"), ylim = c(-5,15))
+                col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"), ylim = c(-5,15), boxwex = 0.25)
       } else {
         boxplot(outcome ~ group, data = rv$data[order(rv$data[,1]),], names = c("Group 1", "Group 2", "Group 3"), ylab = "Outcome",
-                col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"))
+                col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"), boxwex = 0.25)
       }
       p.color2 <- c("cadetblue", "coral", "darkolivegreen4")
       for(i in 1:3){
@@ -523,7 +526,7 @@ server <- function(input, output) {
       return(descr)
     })
     
-    output$aovSummary2OUTL <- renderTable(rownames = TRUE, {
+    output$aovSummary2OUTL <- renderTable(rownames = TRUE, na = "",{
       if(input$TypeOutl != 'No Outlier'){
         return(anova(lm(outcome ~ group, data = rv$data[-1,])))
       } else {
@@ -558,18 +561,18 @@ server <- function(input, output) {
     
     output$p_val1OUTL <- renderText({
       paste("P-value ANOVA with outlier: ",
-            formatC(round(anova(lm(outcome ~ group, data = rv$data))[1,5], 3), format='f', digits=3 )
+            formatC(numformat(round(anova(lm(outcome ~ group, data = rv$data))[1,5], 3), digits = 3), format='f', digits=3 )
       )      
     })
     
     output$p_val2OUTL <- renderText({
       if(input$TypeOutl != 'No Outlier'){
         paste("P-value ANOVA without outlier: ",
-              formatC(round(anova(lm(outcome ~ group, data = rv$data[-1,]))[1,5], 3), format='f', digits=3)
+              formatC(numformat(round(anova(lm(outcome ~ group, data = rv$data[-1,]))[1,5], 3), digits = 3), format='f', digits=3)
         )
       } else if(input$TypeOutl == 'No Outlier'){
         paste("P-value ANOVA without outlier: ",
-              formatC(round(anova(lm(outcome ~ group, data = rv$data))[1,5], 3), format='f', digits=3)
+              formatC(numformat(round(anova(lm(outcome ~ group, data = rv$data))[1,5], 3), digits = 3), format='f', digits=3)
         )
       }
     })
@@ -633,10 +636,10 @@ server <- function(input, output) {
     output$boxplVAR <- renderPlot({
       if(input$EffSize3 !='Manual'){
         boxplot(outcome ~ group, data = rv$data, names = c("Group 1", "Group 2", "Group 3"), ylab = "Outcome",
-                col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"), ylim = c(-2,12))
+                col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"), ylim = c(-2,12), boxwex = 0.25)
       } else {
         boxplot(outcome ~ group, data = rv$data, names = c("Group 1", "Group 2", "Group 3"), ylab = "Outcome",
-                col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"))
+                col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"), boxwex = 0.25)
       }
       p.color2 <- c("cadetblue", "coral", "darkolivegreen4")
       for(i in 1:3){
@@ -664,7 +667,7 @@ server <- function(input, output) {
       polygon(x, hx[,3], col = rgb(t(col2rgb("darkseagreen1")), maxColorValue = 255, alpha = 0.4*255), border = NA)
     }) 
     
-    output$aovSummary1VAR <- renderTable(rownames = TRUE, {
+    output$aovSummary1VAR <- renderTable(rownames = TRUE, na = "", {
       return(anova(lm(outcome ~ group, data = rv$data)))
     })
     output$descriptives1VAR <- renderTable(rownames = TRUE,{
@@ -691,7 +694,7 @@ server <- function(input, output) {
     
     output$p_val1VAR <- renderText({
       paste("P-value ANOVA: ",
-            formatC(round(anova(lm(outcome ~ group, data = rv$data))[1,5], 3), format='f', digits=3 )
+            formatC(numformat(round(anova(lm(outcome ~ group, data = rv$data))[1,5], 3),digits = 3), format='f', digits=3 )
       )      
     })
     
@@ -702,7 +705,7 @@ server <- function(input, output) {
         realFstar <- anova(lm(outcome ~ group, data = rv$data))[1,4]
         boot_p <- mean(Fdist_act >= realFstar)
         paste("P-value bootstrapped ANOVA: ",
-              formatC(round(boot_p, 3), format='f', digits=3)
+              formatC(numformat(round(boot_p, 3), digits = 3), format='f', digits=3)
         )
       })
     })
@@ -789,10 +792,10 @@ server <- function(input, output) {
     output$boxplIND <- renderPlot({
       if(input$EffSize4 !='Manual'){
         boxplot(Outcome ~ Condition ,data = rv$data, names = c("Group 1", "Group 2"), 
-                col = c("aliceblue", "mistyrose"), border = c("cadetblue4", "coral2"), ylim = c(-2,12))
+                col = c("aliceblue", "mistyrose"), border = c("cadetblue4", "coral2"), ylim = c(-2,12), boxwex = 0.2)
       } else {
         boxplot(Outcome ~ Condition ,data = rv$data, names = c("Group 1", "Group 2"), 
-                col = c("aliceblue", "mistyrose"), border = c("cadetblue4", "coral2"))
+                col = c("aliceblue", "mistyrose"), border = c("cadetblue4", "coral2"), boxwex = 0.2)
       }
       p.color2 <- c("cadetblue", "coral")
       for(i in 1:2){
@@ -817,7 +820,7 @@ server <- function(input, output) {
       polygon(x, hx[,2], col = rgb(t(col2rgb("mistyrose")), maxColorValue = 255, alpha = 0.4*255), border = NA)
     })
     
-    output$aovSummary1IND <- renderTable(rownames = TRUE, {
+    output$aovSummary1IND <- renderTable(rownames = TRUE, na = "", {
       return(anova(lm(Outcome ~ Condition, data = rv$data)))
     })
     
@@ -846,14 +849,14 @@ server <- function(input, output) {
     })
     output$p_val1IND <- renderText({
       paste("P-value ANOVA: ",
-            formatC(round(summary(lm(Outcome ~ Condition, data = rv$data))[[4]][2,4], 3), format='f', digits=3 )
+            formatC(numformat(round(summary(lm(Outcome ~ Condition, data = rv$data))[[4]][2,4], 3), digits = 3), format='f', digits=3 )
       )      
     })
     output$p_val2IND <- renderText({
       intercept_only <- lmer(Outcome ~ 1 + (1 | ClusterID), data = rv$data, REML = FALSE)
       model_condition <- lmer(Outcome ~ Condition + (1 | ClusterID), data = rv$data, REML = FALSE)
       paste("P-value multilevel analysis: ",
-            formatC(round(anova(intercept_only,model_condition)[[8]][2],3), format='f', digits=3 )
+            formatC(numformat(round(anova(intercept_only,model_condition)[[8]][2],3), digits = 3), format='f', digits=3 )
       )
     })
   })  

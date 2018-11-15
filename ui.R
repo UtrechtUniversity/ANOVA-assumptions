@@ -1,6 +1,5 @@
 library(shiny)
 library("shinydashboard")
-# fix github link, so put stuff on github
 
 ui <- dashboardPage(
   # Appearance I #####
@@ -31,7 +30,7 @@ ui <- dashboardPage(
             "Kimberley Lek"),align="left", style = "font-size: 10pt"),
       
       div(" -  Shiny source files:",
-          a(href="https://github.com/EducationalShinyUU/ANOVA_assumptions_shiny",
+          a(href="https://github.com/EducationalShinyUU/ANOVA-assumptions",
             target="_blank","GitHub"),align="left", style = "font-size: 10pt"),
       
       HTML("<br><br><br>"),
@@ -183,26 +182,32 @@ tabItem(
              plotOutput("normplNORM")
     ),
     tabPanel("Descriptives",
-             br(),
-             br(),
              fluidRow(
-               column(6,
+                 box(width = 12,
+                     br(),
+                     br(),
+                     column(6,
                       tableOutput("descriptives1NORM")
-               )
-             ),
-             br(),
-             br()
+                ),
+                br(),
+                br()
+                )  
+             )
+
     ),
     tabPanel("ANOVA tables",
-             br(),
-             br(),
              fluidRow(
-               column(6,
-                      tableOutput("aovSummary1NORM")
+               box(width = 12, 
+                   br(),
+                   br(),
+                   column(6,
+                          tableOutput("aovSummary1NORM")   
+                    ),
+                   br(),
+                   br(),
+                   br()
                )
-             ),
-             br(),
-             br()
+             )
     )
   ),
   fluidRow(
@@ -267,9 +272,10 @@ tabItem(
              plotOutput("normplOUTL")
     ),
     tabPanel("Descriptives",
-             br(),
-             br(),
              fluidRow(
+               box(width = 12, 
+               br(),
+               br(),    
                column(6,
                       h4("With outliers"),
                       tableOutput("descriptives1OUTL")
@@ -277,26 +283,30 @@ tabItem(
                column(6,
                       h4("Without outliers"),
                       tableOutput("descriptives2OUTL")
+               ),
+               br(),
+               br()
                )
-             ),
-             br(),
-             br()
+             )
     ),
     tabPanel("ANOVA tables",
-             br(),
-             br(),
              fluidRow(
-               column(6,
-                      h4("With outliers"),
-                      tableOutput("aovSummary1OUTL")
-               ),
-               column(6,
-                      h4("Without outliers"),
-                      tableOutput("aovSummary2OUTL")
-               )
-             ),
-             br(),
-             br()
+               box(width = 12,
+                   br(),
+                   br(),
+                   column(6,
+                          h4("With outliers"),
+                          tableOutput("aovSummary1OUTL")
+                   ),
+                   column(6,
+                          h4("Without outliers"),
+                          tableOutput("aovSummary2OUTL")
+                   ),
+                   br(),
+                   br(),
+                   br()
+                   )
+             )
     )
   ),
   fluidRow(
@@ -371,30 +381,36 @@ tabItem(
              plotOutput("normplVAR")
     ),
     tabPanel("Descriptives",
-             br(),
-             br(),
              fluidRow(
-               column(6,
-                      tableOutput("descriptives1VAR")
-               ),
-               column(6,
-                      h3("Variance ratio in the sample:"),
-                      textOutput("true.rat")
-               )      
-             ),
-             br(),
-             br()
+               box(width = 12,
+                   br(),
+                   br(),
+                   column(6,
+                          tableOutput("descriptives1VAR")
+                   ),
+                   column(6,
+                          h3("Variance ratio in the sample:"),
+                          textOutput("true.rat")
+                   ),
+                   br(),
+                   br()
+               )
+             )
     ),
     tabPanel("ANOVA tables",
-             br(),
-             br(),
              fluidRow(
-               column(6,
-                      tableOutput("aovSummary1VAR")
-               )
-             ),
-             br(),
-             br()
+               box(width = 12,
+                   br(),
+                   br(),
+                   column(6,
+                          tableOutput("aovSummary1VAR")
+                   ),
+                   br(),
+                   br(),
+                   br()
+                   )
+
+             )
     )
   ),
   fluidRow(
@@ -467,30 +483,37 @@ tabItem(
     tabPanel("Normal distributions", 
              plotOutput("normplIND")),
     tabPanel("Descriptives",
-             br(),
-             br(),
              fluidRow(
-               column(6,
-                      tableOutput("descriptives1IND")
-               ),
-               column(6,
-                      h3(paste("ICC in the sample:"), textOutput("true.icc"))
-               )      
-             ),
-             br(),
-             br()
+               box(width = 12, 
+                   br(),
+                   br(),
+                   column(6,
+                          tableOutput("descriptives1IND")
+                   ),
+                   column(6,
+                          h3(paste("ICC in the sample:"), textOutput("true.icc"))
+                   ),
+                   br(),
+                   br(),
+                   br()
+                )
+      
+             )
     ),
     tabPanel("ANOVA tables",
-             br(),
-             br(),
              fluidRow(
-               column(6,
-                      h4("not accounting for dependency"),
-                      tableOutput("aovSummary1IND")
-               )
-             ),
-             br(),
-             br()
+               box(width = 12,
+                   br(),
+                   br(),
+                   column(6,
+                          h4("not accounting for dependency"),
+                          tableOutput("aovSummary1IND")
+                   ),
+                   br(),
+                   br(),
+                   br()
+                )
+             )
     )
   ),
   fluidRow(

@@ -229,7 +229,8 @@ tabItem(
            h3("Outlier specifications", style="color:brown"),
            selectInput(
              "TypeOutl", "Outlier?", choices = c("No Outlier", 
-                                                 "Specify outlier")
+                                                 "Specify outlier",
+                                                 "Random outliers")
            ),
            conditionalPanel(condition = "input.TypeOutl == 'Specify outlier'",
                             wellPanel(
@@ -239,7 +240,10 @@ tabItem(
                                                                          "Group 2", "Group 3")
                               )
                             )
-           )
+           )#,
+           #conditionalPanel(condition = "input.TypeOutl == 'Random outliers'",
+          #                  wellPanel(
+          #                    sliderInput("outl.valmax", label="Maximum outlier value", value=0, min=-5, max=15)))
     ),
     column(6, 
            h3("ANOVA specifications", style="color:brown"),

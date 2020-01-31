@@ -19,7 +19,7 @@ ANOVA_dat_norm <- function(total.n, group.n, eta.sq, kurt = 0, skw = 0){
   pattern <- sample(1:2, 1)
   random.sign <- sample(c(-1,1), 1)
   
-  data <- as.data.frame(matrix(, ncol = 2, nrow = total.n))
+  data <- as.data.frame(matrix(NA, ncol = 2, nrow = total.n))
   colnames(data) <- c("group", "outcome")
   
   data[,1] <- as.factor(rep(c(1:3), each = group.n))
@@ -66,7 +66,7 @@ ANOVA_dat_norm <- function(total.n, group.n, eta.sq, kurt = 0, skw = 0){
 }
 
 ANOVA_dat_man_norm <- function(total.n, group.n, mu1, mu2, mu3, sd.overall, kurt = 0, skw = 0){
-  data <- as.data.frame(matrix(, ncol = 2, nrow = total.n))
+  data <- as.data.frame(matrix(NA, ncol = 2, nrow = total.n))
   colnames(data) <- c("group", "outcome")
   
   ############ SD DOES NOT MATCH INPUT SD NOW< ADJUST!! 
@@ -111,7 +111,7 @@ Bootstr_Fdistr_norm <- function(meanstar, R, act_data, group.n){
   gr1 <- act_data[act_data[,1] == 1,2] - meanstar[1]
   gr2 <- act_data[act_data[,1] == 2,2] - meanstar[2]
   gr3 <- act_data[act_data[,1] == 3,2] - meanstar[3]
-  simdata <- as.data.frame(matrix(,ncol = 2, nrow = 3*group.n))
+  simdata <- as.data.frame(matrix(NA,ncol = 2, nrow = 3*group.n))
   colnames(simdata) <- c("group", "outcome")
   simdata[,1] <- act_data[,1]
   for(i in 1:R){
@@ -131,7 +131,7 @@ ANOVA_dat_outl <- function(total.n, group.n, eta.sq){
   pattern <- sample(1:2, 1)
   random.sign <- sample(c(-1,1), 1)
   
-  data <- as.data.frame(matrix(, ncol = 2, nrow = total.n))
+  data <- as.data.frame(matrix(NA, ncol = 2, nrow = total.n))
   colnames(data) <- c("group", "outcome")
   
   data[,1] <- as.factor(rep(c(1:3), each = group.n))
@@ -149,7 +149,7 @@ ANOVA_dat_outl <- function(total.n, group.n, eta.sq){
 }
 
 ANOVA_dat_man_outl <- function(total.n, group.n, mu1, mu2, mu3, sd.overall){
-  data <- as.data.frame(matrix(, ncol = 2, nrow = total.n))
+  data <- as.data.frame(matrix(NA, ncol = 2, nrow = total.n))
   colnames(data) <- c("group", "outcome")
   
   data[,1] <- as.factor(rep(c(1:3), each = group.n))
@@ -183,7 +183,7 @@ ANOVA_dat_var <- function(total.n, group.n, eta.sq, var.rat, var.aloc = 0, ss.ra
     group.var[group.ss == 1] <- 3
   }
   
-  data <- as.data.frame(matrix(, ncol = 2, nrow = total.n))
+  data <- as.data.frame(matrix(NA, ncol = 2, nrow = total.n))
   colnames(data) <- c("group", "outcome")
   group.size <- rep(group.n, 3)
   if(ss.rat == 1){
@@ -218,7 +218,7 @@ ANOVA_dat_var <- function(total.n, group.n, eta.sq, var.rat, var.aloc = 0, ss.ra
 }
 
 ANOVA_dat_man_var <- function(total.n, group.n, mu1, mu2, mu3, sd.overall, var.rat, var.aloc = 0, ss.rat){
-  data <- as.data.frame(matrix(, ncol = 2, nrow = total.n))
+  data <- as.data.frame(matrix(NA, ncol = 2, nrow = total.n))
   colnames(data) <- c("group", "outcome")
   group.ss <- sample(c(1:3), 3, replace = FALSE)
   if(var.aloc == 0){
@@ -261,7 +261,7 @@ Bootstr_Fdistr_var <- function(meanstar, R, act_data, group.size){
   gr1 <- act_data[act_data[,1] == 1,2] - meanstar[1]
   gr2 <- act_data[act_data[,1] == 2,2] - meanstar[2]
   gr3 <- act_data[act_data[,1] == 3,2] - meanstar[3]
-  simdata <- as.data.frame(matrix(,ncol = 2, nrow = sum(group.size)))
+  simdata <- as.data.frame(matrix(NA,ncol = 2, nrow = sum(group.size)))
   colnames(simdata) <- c("group", "outcome")
   simdata[,1] <- act_data[,1]
   for(i in 1:R){
@@ -428,7 +428,7 @@ server <- function(input, output) {
       sds <-  round(tapply(rv$data[,2], rv$data[,1], sd),2)
       vars <-  round(tapply(rv$data[,2], rv$data[,1], var),2)
       ss <- as.vector(table(rv$data[,1]))
-      descr <- as.data.frame(matrix(,ncol = 3, nrow = 4))
+      descr <- as.data.frame(matrix(NA,ncol = 3, nrow = 4))
       colnames(descr) <- paste("Group", 1:3)
       rownames(descr) <- c("Mean", "Sd", "Variance", "Sample size")
       descr[1,] <- round(means,2)
@@ -474,7 +474,7 @@ server <- function(input, output) {
     } else if(input$EffSize2 == 'Large'){
       rv$effect.size <- 0.26
     }
-    
+    rv$outl.valmax <- input$outl.valmax
     rv$outl.val <- input$outl.val
     rv$outl.group <- 1
     if(input$group.outl == 'Group 2'){
@@ -499,6 +499,24 @@ server <- function(input, output) {
         rv$data <- rbind(c(rv$outl.group, rv$outl.val), rv$data)      }
     }  
     
+    if(input$TypeOutl == 'Random outliers'){
+      #“maximum”: Q3 + 1.5*IQR
+      #“minimum”: Q1 -1.5*IQR
+      num_outl <- 1+rbinom(1, 4, .2)
+      which_outl <- sample(1:nrow(rv$data), num_outl)
+      IQRs <- tapply(rv$data$outcome, rv$data$group, IQR)[rv$data$group[which_outl]]
+      Qs <- tapply(rv$data$outcome, rv$data$group, quantile)[rv$data$group[which_outl]]
+      #means <- tapply(rv$data$outcome, rv$data$group, mean)[rv$data$group[which_outl]]
+      sds <- tapply(rv$data$outcome, rv$data$group, sd)[rv$data$group[which_outl]]
+      rv$which_outl <- which_outl
+      posneg <- sample(1:2, num_outl, replace = TRUE)
+      
+      #rv$data$outcome[which_outl] <- (means + (sample(c(-3, 3), num_outl, replace = TRUE) * sds)) + rnorm(num_outl, sd = sds/4)
+      rv$data$outcome[which_outl] <- sapply(1:num_outl, function(x){
+        Qs[[x]][c(2,4)][posneg[x]] + (c(-2, 2)[posneg[x]]*IQRs[posneg[x]]) + (c(-1, 1)[posneg[x]]*abs(rnorm(1, sd = sds[x]/6)))
+      })
+    }
+    
     output$boxplOUTL <- renderPlot({
       if(input$EffSize2 !='Manual'){
         boxplot(outcome ~ group, data = rv$data[order(rv$data[,1]),], names = c("Group 1", "Group 2", "Group 3"), ylab = "Outcome",
@@ -508,12 +526,21 @@ server <- function(input, output) {
                 col = c("aliceblue", "mistyrose", "darkseagreen1"), border = c("cadetblue4", "coral2", "darkolivegreen"), boxwex = 0.25)
       }
       p.color2 <- c("cadetblue", "coral", "darkolivegreen4")
+      if(!is.null(rv$which_outl)){
+        pointsdat <- rv$data[-rv$which_outl, ]
+      } else {
+        pointsdat <- rv$data
+      }
       for(i in 1:3){
-        points(x = jitter(unclass(factor(rv$data[,1])[rv$data[,1] == sort(unique(rv$data[,1]))[i]]), amount = 0.01), 
-               y = rv$data[rv$data[,1] == sort(unique(rv$data[,1]))[i],2], col = p.color2[i], pch = 1, lwd = 3)
+        points(x = jitter(unclass(factor(pointsdat[,1])[pointsdat[,1] == sort(unique(pointsdat[,1]))[i]]), amount = 0.01), 
+               y = pointsdat[pointsdat[,1] == sort(unique(pointsdat[,1]))[i],2], col = p.color2[i], pch = 1, lwd = 3)
       }
       if(input$TypeOutl != 'No Outlier'){
-        points(x = rv$outl.group, y = rv$data[1,2], pch = 17, col = p.color2[ rv$outl.group], cex = 2)
+        if(input$TypeOutl == "Random outliers"){
+          points(x = rv$data$group[rv$which_outl], y = rv$data$outcome[rv$which_outl], pch = 17, col = p.color2[rv$data$group[rv$which_outl]], cex = 2)
+        } else {
+          points(x = rv$outl.group, y = rv$data[1,2], pch = 17, col = p.color2[ rv$outl.group], cex = 2)
+        }
         legend("topright", pch = 17, legend = "Outlier", col = p.color2[rv$outl.group], cex = 1.5)
       }
       
